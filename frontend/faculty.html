@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Faculty Attendance - Smart Attendance Tracker</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+  <!-- Shared Top Navbar (Strictly Role-Isolated: Brand + Faculty Badge & User Pill + Logout) -->
+  <header class="navbar">
+    <div class="nav-container">
+      <a href="faculty.html" class="nav-brand">
+        <div class="brand-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+            <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+          </svg>
+        </div>
+        <span>Smart Attendance Tracker</span>
+        <span class="brand-badge">Faculty</span>
+      </a>
+
+      <!-- User Pill & Logout Button ONLY -->
+      <div class="nav-actions">
+        <div class="user-pill">
+          <span class="user-dot"></span>
+          <span id="userPillText">faculty@college.edu (Faculty)</span>
+        </div>
+        <button type="button" id="logoutBtn" class="btn-logout" title="Sign Out">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+          </svg>
+          Logout
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="main-content">
+
+    <!-- Page Header -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Class Attendance &amp; Verification</h1>
+        <p class="page-subtitle">Record daily student roll-call, verify compliance, and export course reports</p>
+      </div>
+      <div>
+        <span class="badge badge-sky" style="font-size: 0.825rem; padding: 0.35rem 0.85rem;">
+          Department of Computer Science &amp; Engineering
+        </span>
+      </div>
+    </div>
+
+    <!-- Control Bar Card -->
+    <div class="card control-bar-card">
+      <div class="control-bar-left">
+        <!-- Course Selector -->
+        <div class="control-item">
+          <label for="facultyCourseSelect">Assigned Course:</label>
+          <select id="facultyCourseSelect" class="form-control" style="min-width: 250px;">
+            <option value="CS201 - Web Technologies" selected>CS201 - Web Technologies</option>
+            <option value="CS202 - Database Management Systems">CS202 - Database Management Systems</option>
+            <option value="CS204 - Computer Networks">CS204 - Computer Networks</option>
+          </select>
+        </div>
+
+        <!-- Date Picker -->
+        <div class="control-item">
+          <label for="attendanceDate">Session Date:</label>
+          <input type="date" id="attendanceDate" class="form-control" style="width: auto;">
+        </div>
+
+        <!-- Live Counter Pill -->
+        <div class="live-counter-pill">
+          <span>Total Enrolled: <strong id="counterTotal">5</strong></span>
+          <span style="color: #cbd5e1;">|</span>
+          <span class="stat-present">Present: <strong id="counterPresent">4</strong></span>
+          <span style="color: #cbd5e1;">|</span>
+          <span class="stat-absent">Absent: <strong id="counterAbsent">1</strong></span>
+        </div>
+      </div>
+
+      <!-- Action Button -->
+      <div>
+        <button type="button" id="exportFacultyCsvBtn" class="btn btn-secondary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Download CSV Report
+        </button>
+      </div>
+    </div>
+
+    <!-- Attendance Marking Table Card -->
+    <section class="card" style="margin-bottom: 2rem;">
+      <div class="table-toolbar">
+        <div>
+          <h2 class="card-title" style="margin-bottom: 0.15rem;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            Daily Attendance Sheet
+          </h2>
+          <span class="card-subtitle">Mark present or absent for today's lecture</span>
+        </div>
+
+        <div>
+          <button type="button" id="markAllPresentBtn" class="btn btn-outline btn-sm">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            Mark All Present
+          </button>
+        </div>
+      </div>
+
+      <!-- Attendance Table -->
+      <div class="table-responsive">
+        <table id="attendanceTable" class="data-table">
+          <thead>
+            <tr>
+              <th style="width: 22%;">Roll / Student ID</th>
+              <th style="width: 32%;">Student Name</th>
+              <th style="width: 18%;">Overall %</th>
+              <th style="width: 28%; text-align: right;">Mark Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Student 1 -->
+            <tr data-roll="24CS001" data-name="Aarav Sharma">
+              <td><strong>24CS001</strong></td>
+              <td>Aarav Sharma</td>
+              <td>
+                <span class="badge badge-present">91.2%</span>
+              </td>
+              <td style="text-align: right;">
+                <div class="attendance-toggle-group">
+                  <div class="toggle-option">
+                    <input type="radio" id="status_1_present" name="status_24CS001" value="present" checked>
+                    <label for="status_1_present">Present</label>
+                  </div>
+                  <div class="toggle-option">
+                    <input type="radio" id="status_1_absent" name="status_24CS001" value="absent">
+                    <label for="status_1_absent">Absent</label>
+                  </div>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Student 2 -->
+            <tr data-roll="24CS002" data-name="Diya Patel">
+              <td><strong>24CS002</strong></td>
+              <td>Diya Patel</td>
+              <td>
+                <span class="badge badge-present">85.0%</span>
+              </td>
+              <td style="text-align: right;">
+                <div class="attendance-toggle-group">
+                  <div class="toggle-option">
+                    <input type="radio" id="status_2_present" name="status_24CS002" value="present" checked>
+                    <label for="status_2_present">Present</label>
+                  </div>
+                  <div class="toggle-option">
+                    <input type="radio" id="status_2_absent" name="status_24CS002" value="absent">
+                    <label for="status_2_absent">Absent</label>
+                  </div>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Student 3 -->
+            <tr data-roll="24CS003" data-name="Rohan Iyer">
+              <td><strong>24CS003</strong></td>
+              <td>Rohan Iyer</td>
+              <td>
+                <span class="badge badge-absent">72.5%</span>
+              </td>
+              <td style="text-align: right;">
+                <div class="attendance-toggle-group">
+                  <div class="toggle-option">
+                    <input type="radio" id="status_3_present" name="status_24CS003" value="present">
+                    <label for="status_3_present">Present</label>
+                  </div>
+                  <div class="toggle-option">
+                    <input type="radio" id="status_3_absent" name="status_24CS003" value="absent" checked>
+                    <label for="status_3_absent">Absent</label>
+                  </div>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Student 4 -->
+            <tr data-roll="24CS004" data-name="Sneha Reddy">
+              <td><strong>24CS004</strong></td>
+              <td>Sneha Reddy</td>
+              <td>
+                <span class="badge badge-present">94.0%</span>
+              </td>
+              <td style="text-align: right;">
+                <div class="attendance-toggle-group">
+                  <div class="toggle-option">
+                    <input type="radio" id="status_4_present" name="status_24CS004" value="present" checked>
+                    <label for="status_4_present">Present</label>
+                  </div>
+                  <div class="toggle-option">
+                    <input type="radio" id="status_4_absent" name="status_24CS004" value="absent">
+                    <label for="status_4_absent">Absent</label>
+                  </div>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Student 5 -->
+            <tr data-roll="24CS005" data-name="Vikram Malhotra">
+              <td><strong>24CS005</strong></td>
+              <td>Vikram Malhotra</td>
+              <td>
+                <span class="badge badge-absent">68.0%</span>
+              </td>
+              <td style="text-align: right;">
+                <div class="attendance-toggle-group">
+                  <div class="toggle-option">
+                    <input type="radio" id="status_5_present" name="status_24CS005" value="present" checked>
+                    <label for="status_5_present">Present</label>
+                  </div>
+                  <div class="toggle-option">
+                    <input type="radio" id="status_5_absent" name="status_24CS005" value="absent">
+                    <label for="status_5_absent">Absent</label>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Card Footer with Primary Action -->
+      <div class="card-footer">
+        <button type="button" id="submitAttendanceBtn" class="btn btn-primary" style="padding: 0.75rem 1.75rem;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+            <polyline points="17 21 17 13 7 13 7 21"></polyline>
+            <polyline points="7 3 7 8 15 8"></polyline>
+          </svg>
+          Save &amp; Submit Attendance
+        </button>
+      </div>
+    </section>
+
+    <!-- Class Summary Section -->
+    <section class="card">
+      <div class="card-header">
+        <div>
+          <h2 class="card-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="20" x2="18" y2="10"></line>
+              <line x1="12" y1="20" x2="12" y2="4"></line>
+              <line x1="6" y1="20" x2="6" y2="14"></line>
+            </svg>
+            Semester Cumulative Class Summary
+          </h2>
+          <p class="card-subtitle">Aggregated attendance percentages and examination eligibility status</p>
+        </div>
+        <span class="badge badge-sky">Curriculum Audit</span>
+      </div>
+
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Roll Number</th>
+              <th>Student Name</th>
+              <th>Total Classes</th>
+              <th>Classes Attended</th>
+              <th>Attendance Percentage</th>
+              <th>Eligibility Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>24CS001</strong></td>
+              <td>Aarav Sharma</td>
+              <td>40</td>
+              <td>36</td>
+              <td><strong>90.0%</strong></td>
+              <td><span class="badge badge-present">Eligible (&ge;75%)</span></td>
+            </tr>
+            <tr>
+              <td><strong>24CS002</strong></td>
+              <td>Diya Patel</td>
+              <td>40</td>
+              <td>34</td>
+              <td><strong>85.0%</strong></td>
+              <td><span class="badge badge-present">Eligible (&ge;75%)</span></td>
+            </tr>
+            <tr>
+              <td><strong>24CS003</strong></td>
+              <td>Rohan Iyer</td>
+              <td>40</td>
+              <td>29</td>
+              <td><strong style="color: var(--danger);">72.5%</strong></td>
+              <td><span class="badge badge-absent">Shortage Warning (&lt;75%)</span></td>
+            </tr>
+            <tr>
+              <td><strong>24CS004</strong></td>
+              <td>Sneha Reddy</td>
+              <td>40</td>
+              <td>38</td>
+              <td><strong>95.0%</strong></td>
+              <td><span class="badge badge-present">Eligible (&ge;75%)</span></td>
+            </tr>
+            <tr>
+              <td><strong>24CS005</strong></td>
+              <td>Vikram Malhotra</td>
+              <td>40</td>
+              <td>27</td>
+              <td><strong style="color: var(--danger);">67.5%</strong></td>
+              <td><span class="badge badge-absent">Shortage Warning (&lt;75%)</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="js/app.js"></script>
+</body>
+
+</html>
